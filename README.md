@@ -1,4 +1,4 @@
-# fpga‑low‑latency‑market‑feed
+# FPGA-Low latency market compute
 
 ## Project Overview  
 This repository contains a learning project designed to implement a simple FPGA‑based system for real‑time market‑data feed handling.
@@ -16,19 +16,19 @@ Developed as part of my self‑guided FPGA and hardware‑software integration e
 
 ## Module Descriptions  
 
-### 📌 Feed Simulator (Python)  
+###  Feed Simulator (Python)  
 A simple Python script (`udp_feed_simulator.py`) generates UDP packets with fields: symbol (ASCII), price (floating or fixed‑point), and volume (uint). The script runs on PC to simulate market‑data feed.  
 **Usage:** Configure symbol, price, volume, send rate.  
 **Purpose:** Provides software baseline and feed input for FPGA design.
 
-### 📌 Packet Parsing Pipeline (Verilog)  
+###  Packet Parsing Pipeline (Verilog)  
 The core hardware logic comprises a chain of modules:  
 - `eth_rx.v`: Ethernet MAC/frame receiver interface (or simplified input model)  
 - `ip_udp_parser.v`: Parses IPv4 header and UDP header to extract payload stream  
 - `payload_parser.v`: Parses payload fields (symbol, price, volume) and outputs structured data  
 These modules form the low‑latency ingress path for market data.
 
-### 📌 Decision Logic (Verilog)  
+###  Decision Logic (Verilog)  
 `decision_logic.v` implements a simple trigger mechanism: when the parsed `price` is below a compile‑time (or runtime) threshold, `buy_trigger` is asserted. Trigger output is mapped to LED/GPIO or sent over UART for demonstration.  
 **Latency Measurement:** A counter or timestamp captures arrival vs trigger output latency in cycles or microseconds.
 
