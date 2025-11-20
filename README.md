@@ -13,7 +13,7 @@ This design demonstrates **low-latency, deterministic data processing** and **FP
 - **Python-based feed simulation** generating market data [`symbol` | `price` | `volume`].
 - **Hardware parser** implemented in Verilog to decode and process incoming feed data.
 - **Threshold-based decision logic** producing BUY/SELL triggers mapped to LEDs or GPIOs.
-- Achieved **~3.2× faster market data parsing and trade signal generation** than a CPU-based software implementation.
+- Achieved **faster market data parsing and trade signal generation** than a CPU-based software implementation.
 - Demonstrated **sub-microsecond deterministic latency** and **low jitter** due to OS-independent FPGA execution.
 - Modular and parameterized Verilog design for extensibility.
 - Includes clean testbenches for parser and decision logic simulation.
@@ -25,19 +25,20 @@ This design demonstrates **low-latency, deterministic data processing** and **FP
 ### Python Feed Simulator  
 A simple Python script (`market_feed_simulator.py`) generates simulated market-data packets with fields: `symbol`, `price`, and `volume`.  
 **Usage:** Configure symbols, price ranges, volume, and send rate to emulate real-time market updates.  
-**Purpose:** Provides a software baseline and feed input to the FPGA through a UART or similar communication interface.  
+**Purpose:** Provides a software baseline and feed input to the FPGA through the UDP socket.  
 
 ### Market Data Parser (Verilog)  
-Implements a hardware pipeline to receive and decode data fields from the incoming feed.  
-- Parses structured packet fields (`symbol`, `price`, `volume`).  
-- Uses pipelined logic for continuous, deterministic throughput.  
-- Outputs parsed fields for real-time decision logic.  
+Implements a hardware AXI component to receive and decode data fields from the incoming AXI feed which intern comes from RMII from the PHY to AXi converter in 2bits per clk.  
+- AXi stream is inputes as (`Tdata[7:0] `, `tvalid`, `tready`, `tlast`).
+- Parses structured packet fields (`symbol`, `price`, `volume`).
+- FSM to encoded  (`W_h`,`R_SYMBOL`,`R_PRICE`,`R_VOL`, `R_SIGNAL`,).    
+- Outputs parsed fields for real-time decision logic to LED0-BUY & LED1-SELL.  
 
 ### Decision Logic (Verilog)  
-Implements a **threshold-based trading rule**:  
+Implements a **threshold-based trading rule**, with prestoreed values:  
 - If `price < THRESHOLD` → assert `BUY_TRIGGER`.  
 - If `price > THRESHOLD` → assert `SELL_TRIGGER`.  
-Trigger outputs are mapped to LEDs or GPIOs for visualization.  
+Trigger outputs are mapped to LEDs later on can be packed back to Ethernet frame to view on PC.  
 **Latency Measurement:** Internal counters or timestamps record the delay between data arrival and trigger assertion.  
 
 ---
